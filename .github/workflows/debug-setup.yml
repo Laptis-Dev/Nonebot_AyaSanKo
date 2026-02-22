@@ -1,0 +1,90 @@
+name: Debug Setup
+
+on:
+  schedule:
+    - cron: "0 0,6 * * *"
+  workflow_dispatch:
+
+jobs:
+  deploy-bot:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 正在检出代码
+        uses: actions/checkout@v4
+
+      - name: 正在设置Python环境
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: 正在安装依赖
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          if command -v pipx &> /dev/null; then
+              echo "pipx already installed from cache"
+              pipx ensurepath
+          else
+              echo "Installing pipx..."
+              python -m pip install --user pipx
+              pipx ensurepath
+              source ~/.profile
+          fi
+
+          if command -v nb &> /dev/null; then
+              echo "nb-cli already installed from cache"
+              nb --version
+          else
+              echo "Installing nb-cli..."
+              pipx install nb-cli
+          fi
+
+          if [ -f requirements.txt ]; then
+              echo "Installing project dependencies..."
+              pip install -r requirements.txt
+          else
+              echo "No requirements.txt found"
+          fi
+
+      - name: 正在从仓库克隆源码
+        run: |
+          git clone https://github.com/Laptis-Dev/Nonebot_AyaSanKo.git
+
+      - name: 正在启动NoneBot
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          cd ${{ github.workspace }}
+          nb run &
+        env:
+          QQ_TOKEN: ${{ secrets.QQ_TOKEN }}
+          ENVIRONMENT: production
+
+      - name: 正在部署并维持Debug会话
+        uses: MitterGYanik/debugger-action-keepmode@master
+        timeout-minutes: 359
+
+      - name: 正在缓存隐私文件，以便下次部署使用
+        uses: actions/cache@v3
+        with:
+          path: ./private
+          key: ${{ runner.os }}-private-${{ secrets.CACHE_VERSION || 'v1' }}
+
+      - name: 正在缓存pip和pipx
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.local/share/pipx
+          key: ${{ runner.os }}-pipx-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pipx-
+
+      - name: 正在缓存项目依赖
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.local/share/nb-cli
+            ./venv
+          key: ${{ runner.os }}-nb-cli-${{ hashFiles('**/pyproject.toml', '**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-nb-cli-
