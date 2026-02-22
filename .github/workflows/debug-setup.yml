@@ -46,38 +46,47 @@ jobs:
               echo "未找到 pyproject.toml 文件"
           fi
 
-      - name: 检查环境配置文件
+      - name: 创建环境配置文件
         run: |
-          if [ -f ".env" ]; then
-            echo "找到环境配置文件，准备启动机器人..."
-            mkdir -p ./private
-            cp .env ./private/
-            echo "环境配置文件已缓存"
-          else
-            echo "未找到环境配置文件!"
-            exit 0
-          fi
+          echo "创建环境配置文件..."
+          mkdir -p ./private
+          echo "ENVIRONMENT=production" > .env
+          echo "DRIVER=~fastapi+~httpx+~websockets+~aiohttp" >> .env
+          echo "HOST=0.0.0.0" >> .env
+          echo "PORT=12893" >> .env
+          echo "QQ_BOT_APPID=${{ secrets.QQ_BOT_APPID }}" >> .env
+          echo "QQ_BOT_TOKEN=${{ secrets.QQ_BOT_TOKEN }}" >> .env
+          echo "QQ_BOT_SECRET=${{ secrets.QQ_BOT_SECRET }}" >> .env
+          echo "QQ_BOT_HTTP_API_URL=https://api.sgroup.qq.com" >> .env
+          echo "QQ_BOT_WS_URL=wss://sbot.qq.com/ws" >> .env
+          echo "use_websocket=true" >> .env
+          echo "QQ_BOT_ENABLE_HEARTBEAT=true" >> .env
+          cp .env ./private/
+          echo "环境配置文件已创建"
 
       - name: 正在启动NoneBot
         if: success()
         run: |
           export PATH="$HOME/.local/bin:$PATH"
           cd ${{ github.workspace }}
-          if [ -f "private/.env" ]; then
-            cp private/.env .env
-            echo "正在启动机器人..."
-            nb run &
-          else
-            echo "环境配置文件缺失!无法自动启动!"
-            exit 0
-          fi
+          echo "正在启动机器人..."
+          nb run &
         env:
-          QQ_TOKEN: ${{ secrets.QQ_TOKEN }}
+          QQ_BOT_APPID: ${{ secrets.QQ_BOT_APPID }}
+          QQ_BOT_TOKEN: ${{ secrets.QQ_BOT_TOKEN }}
+          QQ_BOT_SECRET: ${{ secrets.QQ_BOT_SECRET }}
           ENVIRONMENT: production
 
       - name: 正在部署并维持Debug会话
         uses: MitterGYanik/debugger-action-keepmode@master
         timeout-minutes: 359
+
+      - name: 正在缓存隐私文件，以便下次部署使用
+        if: always()
+        uses: actions/cache@v3
+        with:
+          path: ./private
+          key: ${{ runner.os }}-private-${{ secrets.CACHE_VERSION || 'v1' }}
 
       - name: 正在缓存pip和pipx
         uses: actions/cache@v3
@@ -88,9 +97,3 @@ jobs:
           key: ${{ runner.os }}-pipx-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pipx-
-
-      - name: 正在缓存隐私文件，以便下次部署使用
-        uses: actions/cache@v3
-        with:
-          path: ./private
-          key: ${{ runner.os }}-private-${{ secrets.CACHE_VERSION || 'v1' }}

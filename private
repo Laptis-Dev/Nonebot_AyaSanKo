@@ -1,0 +1,17 @@
+ENVIRONMENT=dev
+LOG_LEVEL=DEBUG
+DRIVER=~fastapi+~httpx+~websockets+~aiohttp
+HOST=0.0.0.0
+PORT=12893
+
+# QQ官方机器人适配器配置
+# 在QQ开放平台获取以下信息: https://q.qq.com/#/app/bot
+QQ_BOT_APPID=102237574
+QQ_BOT_TOKEN=osLAFbehd4pvb6jC3PXdX4X9VtkE8InD
+QQ_BOT_SECRET=JzgN5nWFzjUF1oqtw05AGMTaiqz9KVhu
+
+# QQ机器人连接配置
+QQ_BOT_HTTP_API_URL=https://api.sgroup.qq.com
+QQ_BOT_WS_URL=wss://sbot.qq.com/ws
+use_websocket=true
+QQ_BOT_ENABLE_HEARTBEAT=true

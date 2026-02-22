@@ -1,0 +1,64 @@
+name: Debug Setup
+
+on:
+  schedule:
+    - cron: "0 0,6 * * *"
+  workflow_dispatch:
+
+jobs:
+  deploy-bot:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 正在检出代码
+        uses: actions/checkout@v4
+
+      - name: 正在设置Python环境
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: 正在安装依赖
+        run: |
+          export PATH="$HOME/.local/bin:$PATH"
+          if command -v pipx &> /dev/null; then
+              echo "pipx 缓存已命中"
+              pipx ensurepath
+          else
+              echo "正在安装 pipx..."
+              python -m pip install --user pipx
+              pipx ensurepath
+              source ~/.profile
+          fi
+
+          if command -v nb &> /dev/null; then
+              echo "nb-cli 缓存已命中"
+              nb --version
+          else
+              echo "正在安装 nb-cli..."
+              pipx install nb-cli
+          fi
+
+          if [ -f pyproject.toml ]; then
+              echo "正在安装项目依赖..."
+              pip install -e .
+          else
+              echo "未找到 pyproject.toml 文件"
+          fi
+
+      - name: 创建环境配置文件
+        run: |
+          echo "创建环境配置文件..."
+          mkdir -p ./private
+          cat > .env << EOF
+ENVIRONMENT=production
+DRIVER=~fastapi+~httpx+~websockets+~aiohttp
+HOST=0.0.0.0
+PORT=12893
+QQ_BOT_APPID=${{ secrets.QQ_BOT_APPID }}
+QQ_BOT_TOKEN=${{ secrets.QQ_BOT_TOKEN }}
+QQ_BOT_SECRET=${{ secrets.QQ_BOT_SECRET }}
+QQ_BOT_HTTP_API_URL=https://api.sgroup.qq.com
+QQ_BOT_WS_URL=wss://sbot.qq.com/ws
+use_websocket=true
+QQ_BOT_ENABLE_HEARTBEAT=true
