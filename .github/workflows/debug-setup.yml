@@ -64,12 +64,12 @@ jobs:
           cp .env ./private/
           echo "环境配置文件已创建"
 
-      - name: 正在启动NoneBot
+      - name: 正在试运行NoneBot
         if: success()
         run: |
           export PATH="$HOME/.local/bin:$PATH"
           cd ${{ github.workspace }}
-          echo "正在启动机器人..."
+          echo "正在试运行机器人..."
           nb run &
         env:
           QQ_BOT_APPID: ${{ secrets.QQ_BOT_APPID }}
