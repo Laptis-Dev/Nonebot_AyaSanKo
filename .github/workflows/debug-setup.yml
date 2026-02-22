@@ -61,6 +61,7 @@ jobs:
           echo "QQ_BOT_WS_URL=wss://sbot.qq.com/ws" >> .env
           echo "use_websocket=true" >> .env
           echo "QQ_BOT_ENABLE_HEARTBEAT=true" >> .env
+          echo "SQLALCHEMY_DATABASE_URL=sqlite:///./nonebot.db" >> .env
           cp .env ./private/
           echo "环境配置文件已创建"
 
