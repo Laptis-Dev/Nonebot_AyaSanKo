@@ -1,13 +1,12 @@
-name: 调试环境部署
+name: Debug Setup
 
 on:
   schedule:
     - cron: "0 0,6 * * *"
   workflow_dispatch:
-  手动触发: {}
 
 jobs:
-  部署机器人:
+  deploy-bot:
     runs-on: ubuntu-latest
 
     steps:
@@ -78,24 +77,17 @@ jobs:
           fi
         env:
           QQ_TOKEN: ${{ secrets.QQ_TOKEN }}
-          环境类型: production
+          ENVIRONMENT: production
 
       - name: 正在部署并维持Debug会话
         uses: MitterGYanik/debugger-action-keepmode@master
         timeout-minutes: 359
 
-      - name: 正在缓存环境配置文件
-        if: always()
-        uses: actions/cache@v3
-        with:
-          path: ./private
-          key: ${{ runner.os }}-私有配置-${{ secrets.CACHE_VERSION || 'v1' }}
-
       - name: 正在缓存隐私文件，以便下次部署使用
         uses: actions/cache@v3
         with:
           path: ./private
-          key: ${{ runner.os }}-私有配置-${{ secrets.CACHE_VERSION || 'v1' }}
+          key: ${{ runner.os }}-private-${{ secrets.CACHE_VERSION || 'v1' }}
 
       - name: 正在缓存pip和pipx
         uses: actions/cache@v3
@@ -103,9 +95,9 @@ jobs:
           path: |
             ~/.cache/pip
             ~/.local/share/pipx
-          key: ${{ runner.os }}-pipx缓存-${{ hashFiles('**/requirements.txt') }}
+          key: ${{ runner.os }}-pipx-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
-            ${{ runner.os }}-pipx缓存-
+            ${{ runner.os }}-pipx-
 
       - name: 正在缓存项目依赖
         uses: actions/cache@v3
@@ -113,6 +105,6 @@ jobs:
           path: |
             ~/.local/share/nb-cli
             ./venv
-          key: ${{ runner.os }}-nb-cli依赖-${{ hashFiles('**/pyproject.toml', '**/requirements.txt') }}
+          key: ${{ runner.os }}-nb-cli-${{ hashFiles('**/pyproject.toml', '**/requirements.txt') }}
           restore-keys: |
-            ${{ runner.os }}-nb-cli依赖-
+            ${{ runner.os }}-nb-cli-
