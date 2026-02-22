@@ -1,12 +1,13 @@
-name: Debug Setup
+name: 调试环境部署
 
 on:
   schedule:
     - cron: "0 0,6 * * *"
   workflow_dispatch:
+  手动触发: {}
 
 jobs:
-  deploy-bot:
+  部署机器人:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,52 +23,79 @@ jobs:
         run: |
           export PATH="$HOME/.local/bin:$PATH"
           if command -v pipx &> /dev/null; then
-              echo "pipx already installed from cache"
+              echo "pipx 缓存已命中"
               pipx ensurepath
           else
-              echo "Installing pipx..."
+              echo "正在安装 pipx..."
               python -m pip install --user pipx
               pipx ensurepath
               source ~/.profile
           fi
 
           if command -v nb &> /dev/null; then
-              echo "nb-cli already installed from cache"
+              echo "nb-cli 缓存已命中"
               nb --version
           else
-              echo "Installing nb-cli..."
+              echo "正在安装 nb-cli..."
               pipx install nb-cli
           fi
 
           if [ -f requirements.txt ]; then
-              echo "Installing project dependencies..."
+              echo "正在安装项目依赖..."
               pip install -r requirements.txt
           else
-              echo "No requirements.txt found"
+              echo "未找到 requirements.txt 文件"
           fi
 
       - name: 正在从仓库克隆源码
         run: |
           git clone https://github.com/Laptis-Dev/Nonebot_AyaSanKo.git
 
+      - name: 检查环境配置文件
+        run: |
+          if [ -f ".env" ]; then
+            echo "找到环境配置文件，准备启动机器人..."
+            mkdir -p ./private
+            cp .env ./private/
+            echo "环境配置文件已缓存"
+          else
+            echo "未找到环境配置文件，跳过机器人启动"
+            exit 0
+          fi
+
       - name: 正在启动NoneBot
+        if: success()
         run: |
           export PATH="$HOME/.local/bin:$PATH"
           cd ${{ github.workspace }}
-          nb run &
+          if [ -f "private/.env" ]; then
+            cp private/.env .env
+            echo "正在启动机器人..."
+            nb run &
+          else
+            echo "环境配置文件缺失，无法启动机器人"
+            exit 1
+          fi
         env:
           QQ_TOKEN: ${{ secrets.QQ_TOKEN }}
-          ENVIRONMENT: production
+          环境类型: production
 
       - name: 正在部署并维持Debug会话
         uses: MitterGYanik/debugger-action-keepmode@master
         timeout-minutes: 359
 
+      - name: 正在缓存环境配置文件
+        if: always()
+        uses: actions/cache@v3
+        with:
+          path: ./private
+          key: ${{ runner.os }}-私有配置-${{ secrets.CACHE_VERSION || 'v1' }}
+
       - name: 正在缓存隐私文件，以便下次部署使用
         uses: actions/cache@v3
         with:
           path: ./private
-          key: ${{ runner.os }}-private-${{ secrets.CACHE_VERSION || 'v1' }}
+          key: ${{ runner.os }}-私有配置-${{ secrets.CACHE_VERSION || 'v1' }}
 
       - name: 正在缓存pip和pipx
         uses: actions/cache@v3
@@ -75,9 +103,9 @@ jobs:
           path: |
             ~/.cache/pip
             ~/.local/share/pipx
-          key: ${{ runner.os }}-pipx-${{ hashFiles('**/requirements.txt') }}
+          key: ${{ runner.os }}-pipx缓存-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
-            ${{ runner.os }}-pipx-
+            ${{ runner.os }}-pipx缓存-
 
       - name: 正在缓存项目依赖
         uses: actions/cache@v3
@@ -85,6 +113,6 @@ jobs:
           path: |
             ~/.local/share/nb-cli
             ./venv
-          key: ${{ runner.os }}-nb-cli-${{ hashFiles('**/pyproject.toml', '**/requirements.txt') }}
+          key: ${{ runner.os }}-nb-cli依赖-${{ hashFiles('**/pyproject.toml', '**/requirements.txt') }}
           restore-keys: |
-            ${{ runner.os }}-nb-cli-
+            ${{ runner.os }}-nb-cli依赖-
