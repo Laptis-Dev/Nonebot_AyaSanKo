@@ -46,10 +46,6 @@ jobs:
               echo "未找到 requirements.txt 文件"
           fi
 
-      - name: 正在从仓库克隆源码
-        run: |
-          git clone https://github.com/Laptis-Dev/Nonebot_AyaSanKo.git
-
       - name: 检查环境配置文件
         run: |
           if [ -f ".env" ]; then
@@ -83,12 +79,6 @@ jobs:
         uses: MitterGYanik/debugger-action-keepmode@master
         timeout-minutes: 359
 
-      - name: 正在缓存隐私文件，以便下次部署使用
-        uses: actions/cache@v3
-        with:
-          path: ./private
-          key: ${{ runner.os }}-private-${{ secrets.CACHE_VERSION || 'v1' }}
-
       - name: 正在缓存pip和pipx
         uses: actions/cache@v3
         with:
@@ -99,12 +89,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pipx-
 
-      - name: 正在缓存项目依赖
+      - name: 正在缓存隐私文件，以便下次部署使用
         uses: actions/cache@v3
         with:
-          path: |
-            ~/.local/share/nb-cli
-            ./venv
-          key: ${{ runner.os }}-nb-cli-${{ hashFiles('**/pyproject.toml', '**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-nb-cli-
+          path: ./private
+          key: ${{ runner.os }}-private-${{ secrets.CACHE_VERSION || 'v1' }}
