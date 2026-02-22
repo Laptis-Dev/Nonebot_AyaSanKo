@@ -39,11 +39,11 @@ jobs:
               pipx install nb-cli
           fi
 
-          if [ -f requirements.txt ]; then
+          if [ -f pyproject.toml ]; then
               echo "正在安装项目依赖..."
-              pip install -r requirements.txt
+              pip install -e .
           else
-              echo "未找到 requirements.txt 文件"
+              echo "未找到 pyproject.toml 文件"
           fi
 
       - name: 检查环境配置文件
@@ -54,7 +54,7 @@ jobs:
             cp .env ./private/
             echo "环境配置文件已缓存"
           else
-            echo "未找到环境配置文件，跳过机器人启动"
+            echo "未找到环境配置文件!"
             exit 0
           fi
 
@@ -68,7 +68,7 @@ jobs:
             echo "正在启动机器人..."
             nb run &
           else
-            echo "环境配置文件缺失，无法启动机器人"
+            echo "环境配置文件缺失!无法自动启动!"
             exit 0
           fi
         env:
