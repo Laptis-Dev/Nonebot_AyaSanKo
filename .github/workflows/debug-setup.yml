@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  AES_KEY: ${{ secrets.AES_KEY }}  # GitHub Secret 中存储 AES 密钥
+  AES_KEY: ${{ secrets.AES_KEY }} # GitHub Secret 中存储 AES 密钥
 
 jobs:
   deploy-bot:
@@ -56,15 +56,13 @@ jobs:
         run: |
           if [ -f "private/.env.encrypted" ]; then
               echo "找到缓存的加密配置文件"
-              echo "cached=true" >> $GITHUB_OUTPUT
           else
-              echo "未找到缓存的加密配置文件"
-              echo "cached=false" >> $GITHUB_OUTPUT
+              echo "未找到缓存的加密配置文件，请自行执行python aes_tool.py encrypt private/.env.encrypted .env"
 
       - name: 解密配置文件
         if: steps.check_cache.outputs.cached == 'true'
         run: |
-          python aes_tool.py decrypt private/.env.encrypted .env
+          python secure_aes.py decrypt private/.env.encrypted .env
           echo "配置文件已解密"
 
       - name: 创建配置文件
@@ -84,8 +82,7 @@ jobs:
           echo "use_websocket=true" >> .env
           echo "QQ_BOT_ENABLE_HEARTBEAT=true" >> .env
           echo "SQLALCHEMY_DATABASE_URL=sqlite+aiosqlite:///./nonebot.db" >> .env
-          cp .env private/.env.encrypted
-          python aes_tool.py encrypt private/.env.encrypted private/.env.final
+          python secure_aes.py encrypt .env private/.env.encrypted
           echo "配置文件已创建并加密"
 
       - name: 正在试运行NoneBot
@@ -118,13 +115,12 @@ jobs:
         uses: MitterGYanik/debugger-action-keepmode@master
         timeout-minutes: 359
 
-      - name: 加密并缓存配置文件
+      - name: 加密.env文件
         if: always()
         run: |
-          # 会话结束后重新加密配置文件
           if [ -f ".env" ]; then
-            python aes_tool.py encrypt .env private/.env.encrypted
-            echo "配置文件已重新加密"
+            python secure_aes.py encrypt .env private/.env.encrypted
+            echo "配置文件已加密!"
           fi
 
       - name: 正在缓存加密文件和工具
