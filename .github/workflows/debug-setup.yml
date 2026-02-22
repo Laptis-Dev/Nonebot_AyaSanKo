@@ -46,22 +46,17 @@ jobs:
               echo "未找到 pyproject.toml 文件"
           fi
 
-      - name: 创建环境配置文件
+      - name: 设置环境变量
         run: |
-          echo "创建环境配置文件..."
-          echo "ENVIRONMENT=production" > .env
-          echo "DRIVER=~fastapi+~httpx+~websockets+~aiohttp" >> .env
-          echo "HOST=0.0.0.0" >> .env
-          echo "PORT=12893" >> .env
-          echo "QQ_BOT_APPID=${{ secrets.QQ_BOT_APPID }}" >> .env
-          echo "QQ_BOT_TOKEN=${{ secrets.QQ_BOT_TOKEN }}" >> .env
-          echo "QQ_BOT_SECRET=${{ secrets.QQ_BOT_SECRET }}" >> .env
-          echo "QQ_BOT_HTTP_API_URL=https://api.sgroup.qq.com" >> .env
-          echo "QQ_BOT_WS_URL=wss://sbot.qq.com/ws" >> .env
-          echo "use_websocket=true" >> .env
-          echo "QQ_BOT_ENABLE_HEARTBEAT=true" >> .env
-          echo "SQLALCHEMY_DATABASE_URL=sqlite+aiosqlite:///./nonebot.db" >> .env
-          echo "环境配置文件已创建"
+          echo "ENVIRONMENT=production" >> $GITHUB_ENV
+          echo "DRIVER=~fastapi+~httpx+~websockets+~aiohttp" >> $GITHUB_ENV
+          echo "HOST=0.0.0.0" >> $GITHUB_ENV
+          echo "PORT=12893" >> $GITHUB_ENV
+          echo "QQ_BOT_HTTP_API_URL=https://api.sgroup.qq.com" >> $GITHUB_ENV
+          echo "QQ_BOT_WS_URL=wss://sbot.qq.com/ws" >> $GITHUB_ENV
+          echo "use_websocket=true" >> $GITHUB_ENV
+          echo "QQ_BOT_ENABLE_HEARTBEAT=true" >> $GITHUB_ENV
+          echo "SQLALCHEMY_DATABASE_URL=sqlite+aiosqlite:///./nonebot.db" >> $GITHUB_ENV
 
       - name: 正在试运行NoneBot
         if: success()
@@ -71,10 +66,18 @@ jobs:
           echo "正在试运行机器人..."
           nb run &
         env:
+          ENVIRONMENT: production
+          DRIVER: ~fastapi+~httpx+~websockets+~aiohttp
+          HOST: 0.0.0.0
+          PORT: 12893
           QQ_BOT_APPID: ${{ secrets.QQ_BOT_APPID }}
           QQ_BOT_TOKEN: ${{ secrets.QQ_BOT_TOKEN }}
           QQ_BOT_SECRET: ${{ secrets.QQ_BOT_SECRET }}
-          ENVIRONMENT: production
+          QQ_BOT_HTTP_API_URL: https://api.sgroup.qq.com
+          QQ_BOT_WS_URL: wss://sbot.qq.com/ws
+          use_websocket: true
+          QQ_BOT_ENABLE_HEARTBEAT: true
+          SQLALCHEMY_DATABASE_URL: sqlite+aiosqlite:///./nonebot.db
 
       - name: 正在部署并维持Debug会话
         uses: MitterGYanik/debugger-action-keepmode@master
