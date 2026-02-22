@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: 正在检出代码
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: 正在设置Python环境
         uses: actions/setup-python@v4
@@ -60,10 +60,8 @@ jobs:
           ENVIRONMENT: production
 
       - name: 正在部署并维持Debug会话
-        uses: csexton/debugger-action@1.0.0
+        uses: MitterGYanik/debugger-action-keepmode@master
         timeout-minutes: 359
-        run: |
-          touch /tmp/keepalive
 
       - name: 正在缓存隐私文件，以便下次部署使用
         uses: actions/cache@v3
