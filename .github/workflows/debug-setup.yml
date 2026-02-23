@@ -4,13 +4,17 @@ on:
   schedule:
     - cron: "0 0,6 * * *"
   workflow_dispatch:
+  push:
+    branches: ["main"]
 
-env:
-  AES_KEY: ${{ secrets.AES_KEY }} # GitHub Secret 中存储 AES 密钥
+
 
 jobs:
   deploy-bot:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
 
     steps:
       - name: 正在检出代码
@@ -45,25 +49,9 @@ jobs:
           if [ -f pyproject.toml ]; then
               echo "正在安装项目依赖..."
               pip install -e .
-              echo "正在安装 AES 加解密工具..."
-              pip install pycryptodome
           else
               echo "未找到 pyproject.toml 文件"
           fi
-
-      - name: 检查缓存的加密文件
-        id: check_cache
-        run: |
-          if [ -f "private/.env.encrypted" ]; then
-              echo "找到缓存的加密配置文件"
-          else
-              echo "未找到缓存的加密配置文件，请自行执行python aes_tool.py encrypt private/.env.encrypted .env"
-
-      - name: 解密配置文件
-        if: steps.check_cache.outputs.cached == 'true'
-        run: |
-          python secure_aes.py decrypt private/.env.encrypted .env
-          echo "配置文件已解密"
 
       - name: 创建配置文件
         if: steps.check_cache.outputs.cached != 'true'
@@ -73,7 +61,7 @@ jobs:
           echo "ENVIRONMENT=production" > .env
           echo "DRIVER=~fastapi+~httpx+~websockets+~aiohttp" >> .env
           echo "HOST=0.0.0.0" >> .env
-          echo "PORT=12893" >> .env
+          echo "PORT=${{ secrets.PORT }}" >> .env
           echo "QQ_BOT_APPID=${{ secrets.QQ_BOT_APPID }}" >> .env
           echo "QQ_BOT_TOKEN=${{ secrets.QQ_BOT_TOKEN }}" >> .env
           echo "QQ_BOT_SECRET=${{ secrets.QQ_BOT_SECRET }}" >> .env
@@ -82,56 +70,44 @@ jobs:
           echo "use_websocket=true" >> .env
           echo "QQ_BOT_ENABLE_HEARTBEAT=true" >> .env
           echo "SQLALCHEMY_DATABASE_URL=sqlite+aiosqlite:///./nonebot.db" >> .env
-          python secure_aes.py encrypt .env private/.env.encrypted
-          echo "配置文件已创建并加密"
+          echo "配置文件已创建"
 
       - name: 正在试运行NoneBot
         if: success()
+        env:
+          QQ_BOT_APPID: ${{ secrets.QQ_BOT_APPID }}
+          QQ_BOT_TOKEN: ${{ secrets.QQ_BOT_TOKEN }}
+          QQ_BOT_SECRET: ${{ secrets.QQ_BOT_SECRET }}
+          PORT: ${{ secrets.PORT }}
+          QQ_BOT_HTTP_API_URL: https://api.sgroup.qq.com
+          QQ_BOT_WS_URL: wss://sbot.qq.com/ws
+          USE_WEBSOCKET: true
+          QQ_BOT_ENABLE_HEARTBEAT: true
+          SQLALCHEMY_DATABASE_URL: sqlite+aiosqlite:///./nonebot.db
         run: |
           export PATH="$HOME/.local/bin:$PATH"
           cd ${{ github.workspace }}
-          echo "正在试运行机器人..."
-          # 如果有解密的文件，使用它；否则创建临时文件
-          if [ -f ".env" ]; then
-            cp .env .env.tmp
-          else
-            echo "ENVIRONMENT=production" > .env.tmp
-            echo "DRIVER=~fastapi+~httpx+~websockets+~aiohttp" >> .env.tmp
-            echo "HOST=0.0.0.0" >> .env.tmp
-            echo "PORT=12893" >> .env.tmp
-            echo "QQ_BOT_APPID=${{ secrets.QQ_BOT_APPID }}" >> .env.tmp
-            echo "QQ_BOT_TOKEN=${{ secrets.QQ_BOT_TOKEN }}" >> .env.tmp
-            echo "QQ_BOT_SECRET=${{ secrets.QQ_BOT_SECRET }}" >> .env.tmp
-            echo "QQ_BOT_HTTP_API_URL=https://api.sgroup.qq.com" >> .env.tmp
-            echo "QQ_BOT_WS_URL=wss://sbot.qq.com/ws" >> .env.tmp
-            echo "use_websocket=true" >> .env.tmp
-            echo "QQ_BOT_ENABLE_HEARTBEAT=true" >> .env.tmp
-            echo "SQLALCHEMY_DATABASE_URL=sqlite+aiosqlite:///./nonebot.db" >> .env.tmp
-          fi
-          export $(cat .env.tmp | xargs)
+          export ENVIRONMENT=production
+          export DRIVER=~fastapi+~httpx+~websockets+~aiohttp
+          export HOST=0.0.0.0
+          export PORT=$PORT
+          export QQ_BOT_HTTP_API_URL=https://api.sgroup.qq.com
+          export QQ_BOT_WS_URL=wss://sbot.qq.com/ws
+          export use_websocket=true
+          export QQ_BOT_ENABLE_HEARTBEAT=true
           nb run &
 
       - name: 正在部署并维持Debug会话
         uses: MitterGYanik/debugger-action-keepmode@master
         timeout-minutes: 359
 
-      - name: 加密.env文件
-        if: always()
-        run: |
-          if [ -f ".env" ]; then
-            python secure_aes.py encrypt .env private/.env.encrypted
-            echo "配置文件已加密!"
-          fi
-
-      - name: 正在缓存加密文件和工具
+      - name: 正在缓存pip与pipx
         if: always()
         uses: actions/cache@v3
         with:
           path: |
-            private/.env.encrypted
             ~/.cache/pip
             ~/.local/share/pipx
-            ~/.local/share/pycryptodome
           key: ${{ runner.os }}-cache-v2-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-cache-v2-

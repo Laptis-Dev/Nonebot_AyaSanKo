@@ -56,6 +56,52 @@
    nb run --reload
    ```
 
+## 🔐 GitHub Actions 配置
+
+如果您 Fork 了本项目，需要配置 GitHub Secrets 才能使 workflows 正常运行。
+
+### Fork 用户配置步骤
+
+1. **进入仓库设置**
+   - 打开您 Fork 的仓库
+   - 点击顶部的 **Settings** 标签
+
+2. **找到 Secrets 设置**
+   - 在左侧菜单中找到 **Secrets and variables**
+   - 点击 **Actions**
+
+3. **创建必要的 Secrets**
+   - 点击 **New repository secret** 按钮
+   - 依次添加以下 4 个 Secrets：
+
+| Name          | Value                   | 说明              |
+| ------------- | ----------------------- | ----------------- |
+| `QQ_BOT_APPID`  | 您的 QQ 机器人 AppID      | 从 QQ 开放平台获取 |
+| `QQ_BOT_TOKEN`  | 您的 QQ 机器人 Token      | 从 QQ 开放平台获取 |
+| `QQ_BOT_SECRET` | 您的 QQ 机器人 Secret     | 从 QQ 开放平台获取 |
+| `PORT`          | 端口号                    | 机器人服务端口    |
+
+4. **保存 Secrets**
+   - 填写完 Name 和 Value 后点击 **Add secret**
+   - 重复步骤 3，直到所有 4 个 Secrets 都添加完成
+
+### 获取 QQ 机器人配置信息
+
+1. 访问 [QQ 开放平台](https://q.qq.com/#/app/bot)
+2. 创建或选择您的机器人应用
+3. 在应用详情中获取：
+   - **APPID**：应用标识符
+   - **TOKEN**：访问令牌
+   - **SECRET**：客户端密钥
+4. 将这些信息填入上述 GitHub Secrets
+
+### 安全注意事项
+
+- ✅ GitHub Secrets 会被自动加密，不会在日志中显示
+- ✅ Fork 后的仓库拥有独立的 Secrets，互不影响
+- ✅ 建议定期轮换 Token 和 Secret
+- ❌ 不要将敏感信息提交到代码中
+
 ## 📦 项目结构
 
 ```
