@@ -75,6 +75,7 @@ jobs:
         run: |
           export PATH="$HOME/.local/bin:$PATH"
           cd ${{ github.workspace }}
+          tmux kill-server || true
           tmux new -s bot -d
           tmux send-keys -t bot "nb run" C-m
 
