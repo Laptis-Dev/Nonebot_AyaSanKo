@@ -1,13 +1,9 @@
 name: Debug Setup
 
 on:
-  schedule:
-    - cron: "0 0,6 * * *"
   workflow_dispatch:
   push:
     branches: ["main"]
-
-
 
 jobs:
   deploy-bot:
@@ -56,45 +52,29 @@ jobs:
       - name: 创建配置文件
         if: steps.check_cache.outputs.cached != 'true'
         run: |
-          echo "创建新的配置文件..."
+          set +x
           mkdir -p private
-          echo "ENVIRONMENT=production" > .env
-          echo "DRIVER=~fastapi+~httpx+~websockets+~aiohttp" >> .env
-          echo "HOST=0.0.0.0" >> .env
-          echo "PORT=${{ secrets.PORT }}" >> .env
-          echo "QQ_BOT_APPID=${{ secrets.QQ_BOT_APPID }}" >> .env
-          echo "QQ_BOT_TOKEN=${{ secrets.QQ_BOT_TOKEN }}" >> .env
-          echo "QQ_BOT_SECRET=${{ secrets.QQ_BOT_SECRET }}" >> .env
-          echo "QQ_BOT_HTTP_API_URL=https://api.sgroup.qq.com" >> .env
-          echo "QQ_BOT_WS_URL=wss://sbot.qq.com/ws" >> .env
-          echo "use_websocket=true" >> .env
-          echo "QQ_BOT_ENABLE_HEARTBEAT=true" >> .env
-          echo "SQLALCHEMY_DATABASE_URL=sqlite+aiosqlite:///./nonebot.db" >> .env
+          cat > .env << 'EOF'
+          ENVIRONMENT=production
+          DRIVER=~fastapi+~httpx+~websockets+~aiohttp
+          HOST=0.0.0.0
+          PORT=${{ secrets.PORT }}
+          QQ_BOT_APPID=${{ secrets.QQ_BOT_APPID }}
+          QQ_BOT_TOKEN=${{ secrets.QQ_BOT_TOKEN }}
+          QQ_BOT_SECRET=${{ secrets.QQ_BOT_SECRET }}
+          QQ_BOT_HTTP_API_URL=https://api.sgroup.qq.com
+          QQ_BOT_WS_URL=wss://sbot.qq.com/ws
+          use_websocket=true
+          QQ_BOT_ENABLE_HEARTBEAT=true
+          SQLALCHEMY_DATABASE_URL=sqlite+aiosqlite:///./nonebot.db
+          EOF
           echo "配置文件已创建"
 
-      - name: 正在试运行NoneBot
+      - name: 正在运行NoneBot并挂置后台
         if: success()
-        env:
-          QQ_BOT_APPID: ${{ secrets.QQ_BOT_APPID }}
-          QQ_BOT_TOKEN: ${{ secrets.QQ_BOT_TOKEN }}
-          QQ_BOT_SECRET: ${{ secrets.QQ_BOT_SECRET }}
-          PORT: ${{ secrets.PORT }}
-          QQ_BOT_HTTP_API_URL: https://api.sgroup.qq.com
-          QQ_BOT_WS_URL: wss://sbot.qq.com/ws
-          USE_WEBSOCKET: true
-          QQ_BOT_ENABLE_HEARTBEAT: true
-          SQLALCHEMY_DATABASE_URL: sqlite+aiosqlite:///./nonebot.db
         run: |
           export PATH="$HOME/.local/bin:$PATH"
           cd ${{ github.workspace }}
-          export ENVIRONMENT=production
-          export DRIVER=~fastapi+~httpx+~websockets+~aiohttp
-          export HOST=0.0.0.0
-          export PORT=$PORT
-          export QQ_BOT_HTTP_API_URL=https://api.sgroup.qq.com
-          export QQ_BOT_WS_URL=wss://sbot.qq.com/ws
-          export use_websocket=true
-          export QQ_BOT_ENABLE_HEARTBEAT=true
           nb run &
 
       - name: 正在部署并维持Debug会话
@@ -111,4 +91,3 @@ jobs:
           key: ${{ runner.os }}-cache-v2-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-cache-v2-
-            ${{ runner.os }}-cache-
