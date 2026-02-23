@@ -48,7 +48,6 @@ jobs:
           else
               echo "未找到 pyproject.toml 文件"
           fi
-          sudo apt-get update && sudo apt-get install -y tmux
 
       - name: 创建配置文件
         run: |
@@ -75,9 +74,8 @@ jobs:
         run: |
           export PATH="$HOME/.local/bin:$PATH"
           cd ${{ github.workspace }}
-          tmux kill-server || true
-          tmux new -s bot -d
-          tmux send-keys -t bot "nb run" C-m
+          screen -dmS bot
+          screen -S bot -p 0 -X stuff "nb run\n"
 
       - name: 正在部署并维持Debug会话
         uses: MitterGYanik/debugger-action-keepmode@master
@@ -93,11 +91,3 @@ jobs:
           key: ${{ runner.os }}-cache-v2-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-cache-v2-
-
-      - name: 缓存apt
-        uses: actions/cache@v3
-        with:
-          path: /var/cache/apt/archives
-          key: ${{ runner.os }}-apt-v1
-          restore-keys: |
-            ${{ runner.os }}-apt-
