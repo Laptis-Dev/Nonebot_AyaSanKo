@@ -2,6 +2,9 @@
 
 基于 NoneBot2 框架的智能聊天机器人插件，集成 BigModel GLM-4.5-Air API，支持QQ群聊智能对话。
 
+## 根据QQ官方的文档，使用AI接入API未经备案，将受到封禁的后果，请用户慎重使用。
+t032FI8PMYJNuuOcZ6fJET9dXYEPF5ywkCqiYcz-Xcfg_USyCulJzXlG8KLexwj1C11GAQVKB0tSaRjiv0wiMqHX1MwglfFwXwlPbEA3aWF2AgDP-j8zxcq9vcUAIgtL21uabAjSRI9INbyemMqJruRnoNfS99_cHaGFiLtzT1iH5ZY1W9hkwNJRbGJDSMPAFoN
+
 ## 🚀 功能特性
 
 - **智能对话**：基于GLM-4.5-Air大语言模型，提供高质量的AI回复
