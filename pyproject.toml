@@ -1,126 +1,23 @@
 [project]
 name = "Nonebot_AyaSanKo"
-version = "0.1.0"
-description = "基于 NoneBot 2 框架开发的 QQ 机器人项目，提供插件化架构和丰富的功能扩展"
+version = "1.0.0"
+description = "Nonebot_AyaSanKo"
 readme = "README.md"
 requires-python = ">=3.10, <4.0"
 dependencies = [
-    "nonebot2[aiohttp,fastapi,httpx,websockets]>=2.4.4",
+    "nonebot2[httpx,websockets]>=2.4.4",
     "nonebot-adapter-qq>=1.6.6",
-    "nonebot-plugin-status>=0.9.0",
-    "nonebot-plugin-alconna>=0.60.4",
-    "nonebot-plugin-htmlkit>=0.1.0rc5",
-    "nonebot-plugin-apscheduler>=0.3.0",
-    "nonebot-plugin-localstore>=0.4.0",
-    "nonebot-plugin-orm[default]>=0.5.0",
-    "aiosqlite>=0.19.0",
-    "psutil>=5.9.0",
+    "tenacity>=8.0.0",
+    "pydantic>=2.0.0",
 ]
-
-[project.optional-dependencies]
-dev = [
-    "pyright[nodejs]",
-    "mypy",
-    "ruff"
-]
-
 
 [tool.nonebot]
-plugin_dirs = ["plugins"]
-builtin_plugins = ["echo"]
+plugin_dirs = []
+builtin_plugins = ["echo", "single_session"]
 
 [tool.nonebot.adapters]
-nonebot-adapter-qq = [
-    { name = "QQ", module_name = "nonebot.adapters.qq" }
-]
+nonebot-adapter-qq = [{ name = "QQ", module_name = "nonebot.adapters.qq" }]
+"@local" = []
 
 [tool.nonebot.plugins]
 "@local" = []
-# nonebot-plugin-docs = ["nonebot_plugin_docs"]  # 暂时注释掉，避免加载失败
-# nonebot-plugin-sentry = ["nonebot_plugin_sentry"]  # 可选插件，未配置 DSN
-nonebot-plugin-apscheduler = ["nonebot_plugin_apscheduler"]
-nonebot-plugin-localstore = ["nonebot_plugin_localstore"]
-nonebot-plugin-alconna = ["nonebot_plugin_alconna"]
-# nonebot-plugin-filehost = ["nonebot_plugin_filehost"]  # 暂时注释掉，避免 Pydantic 版本兼容问题
-nonebot-plugin-orm = ["nonebot_plugin_orm"]
-nonebot-plugin-htmlkit = ["nonebot_plugin_htmlkit"]
-[tool.ruff]
-line-length = 88
-target-version = "py310"
-
-[tool.ruff.format]
-line-ending = "lf"
-
-[tool.ruff.lint]
-# For more rules, see https://docs.astral.sh/ruff/rules/.
-select = [
-    "F",     # Pyflakes
-    "W",     # pycodestyle warnings
-    "E",     # pycodestyle errors
-    "I",     # isort
-    "C90",   # mccabe
-    "N",     # pep8-naming
-    "PL",    # pylint
-    "UP",    # pyupgrade
-    "YTT",   # flake8-2020
-    "ANN",   # flake8-annotations
-    "ASYNC", # flake8-async
-    "BLE",   # flake8-blind-except
-    "FBT",   # flake8-boolean-trap
-    "B",     # flake8-bugbear
-    "A",     # flake8-builtins
-    "COM",   # flake8-commas
-    "C4",    # flake8-comprehensions
-    "DTZ",   # flake8-datetimez
-    "T10",   # flake8-debugger
-    "ICN",   # flake8-import-conventions
-    "PIE",   # flake8-pie
-    "T20",   # flake8-print
-    "PYI",   # flake8-pyi
-    "Q",     # flake8-quotes
-    "RSE",   # flake8-raise
-    "RET",   # flake8-return
-    "SIM",   # flake8-simplify
-    "SLOT",  # flake8-slots
-    "TID",   # flake8-tidy-imports
-    "TC",    # flake8-type-checking
-    "ARG",   # flake8-unused-arguments
-    "PTH",   # flake8-use-pathlib
-    # "ERA",   # eradicate
-    "FAST",  # FastAPI
-    "PERF",  # Perflint
-    "PGH",   # pygrep-hooks
-    "FURB",  # refurb
-    "TRY",   # tryceratops
-    "RUF",   # Ruff-specific rules
-]
-ignore = [
-    "E402",    # module-import-not-at-top-of-file  # nonebot2 require() violates this
-    "B008",    # function-call-in-default-argument  # nonebot2 Depends() without Annotated violates this
-    "UP037",   # quoted-annotation
-    # "RUF001",  # ambiguous-unicode-character-string
-    # "RUF002",  # ambiguous-unicode-character-docstring
-    # "RUF003",  # ambiguous-unicode-character-comment
-    # "ANN201",  # missing-return-type-undocumented-public-function
-    "ANN202",  # missing-return-type-private-function
-    "ANN401",  # any-type
-    "COM812",  # missing-trailing-comma
-    "PLC0415", # import-outside-top-level
-    "BLE001",  # blind-except  # 允许使用 Exception 异常处理
-]
-allowed-confusables = ["，", "。", "“", "”", "：", "；", "？", "！", "【", "】", "《", "》", "…", "—", "（", "）", "、"]
-
-[tool.ruff.lint.pyupgrade]
-keep-runtime-typing = true
-
-[tool.pyright]
-# For Pylance/Pyright configurations, see https://microsoft.github.io/pyright/#/configuration.
-pythonVersion = "3.10"
-pythonPlatform = "All"
-typeCheckingMode = "standard"
-
-[tool.mypy]
-# For MyPy configurations, see https://mypy.readthedocs.io/en/latest/config_file.html.
-python_version = "3.10"
-ignore_missing_imports = true
-disable_error_code = ["attr-defined"]

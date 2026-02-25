@@ -53,19 +53,15 @@ jobs:
         run: |
           set +x
           mkdir -p private
-          cat > .env << 'EOF'
-          ENVIRONMENT=production
-          DRIVER=~fastapi+~httpx+~websockets+~aiohttp
-          HOST=0.0.0.0
-          PORT=${{ secrets.PORT }}
-          QQ_BOT_APPID=${{ secrets.QQ_BOT_APPID }}
-          QQ_BOT_TOKEN=${{ secrets.QQ_BOT_TOKEN }}
-          QQ_BOT_SECRET=${{ secrets.QQ_BOT_SECRET }}
-          QQ_BOT_HTTP_API_URL=https://api.sgroup.qq.com
-          QQ_BOT_WS_URL=wss://sbot.qq.com/ws
-          use_websocket=true
-          QQ_BOT_ENABLE_HEARTBEAT=true
-          SQLALCHEMY_DATABASE_URL=sqlite+aiosqlite:///./nonebot.db
+          cat > .env.prod << 'EOF'
+          DRIVER=~httpx+~websockets
+          QQ_BOTS=${{ secrets.QQ_BOTS }}
+          CHAT__API_KEY=${{ secrets.CHAT_API_KEY }}
+          CHAT__API_BASE=https://open.bigmodel.cn/api/paas/v4
+          CHAT__MODEL=glm-4.5-air
+          CHAT__MAX_TOKENS=1000
+          CHAT__TEMPERATURE=1.0
+          CHAT__TIMEOUT=30
           EOF
           echo "配置文件已创建"
 
