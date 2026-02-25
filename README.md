@@ -1,13 +1,13 @@
 # Nonebot_AyaSanKo - AI聊天机器人
 
-基于 NoneBot2 框架的智能聊天机器人插件，集成 BigModel GLM-4.5-Air API，支持QQ群聊智能对话。
+是基于 NoneBot2 框架的智能聊天机器人插件，支持QQ群聊智能对话。
 
 ## 根据腾讯QQ官方规定，使用AI接入API未经备案，可能导致机器人账号被封禁.
 请仔细阅读：[关于QQ机器人违规接入AIGC能力的相关说明](https://pd.qq.com/g/20dnumts4z/post/B_e542d268c1a607001441152197297526170X60?subc=1409545)
 **关于开发者的真实想法:**我已退出官方QQ机器人的折腾，但不过呢会继续开发Nonebot与QQ官方机器人**兼容**的插件，说明这在与官方不官方的关系是没有影响的！
 **若您选择继续使用，请务必遵守腾讯官方条款，自行承担所有风险! 再次强调:本项目使用MIT协议**
 
-## 🚀 功能特性
+## 功能特性
 
 - **智能对话**：基于GLM-4.5-Air大语言模型，提供高质量的AI回复
 - **@触发**：在QQ群聊中被@时自动触发对话
@@ -15,13 +15,13 @@
 - **配置灵活**：支持环境变量配置，易于部署和扩展
 - **错误处理**：完善的异常处理和日志记录机制
 
-## 📦 安装配置
+## 安装配置
 
-### 0. Fork仓库后的配置（重要）
+### Fork仓库的提醒（重要）
+在Fork前请确定连接官方QQ的API没有IP白名单上的限制，若没有则可以Fork，并且也可以挂载QQ机器人程序在工作流中持续运行！
+为了使自动部署工作流正常运行，你将需要完成以下步骤：
 
-如果您Fork了此仓库，为了使自动部署工作流正常运行，需要完成以下步骤：
-
-#### 添加GitHub Secrets
+### 添加GitHub Secrets
 
 在您Fork的仓库中，进入 **Settings → Secrets and variables → Actions**，添加以下 Secrets：
 
@@ -30,8 +30,8 @@
 | `QQ_BOTS`      | QQ机器人配置JSON | 见下方示例                                    |
 | `CHAT_API_KEY` | BigModel API密钥 | [BigModel开放平台](https://open.bigmodel.cn/) |
 
-**QQ_BOTS 配置示例：**
-
+**QQ_BOTS & CHAT__API_KEY の 配置模板：**
+YOUR_SECRET_NAME:QQ_BOTS
 ```json
 [
   {
@@ -45,80 +45,34 @@
   }
 ]
 ```
-
-将上述JSON内容保存为Secret `QQ_BOTS`。
-
-#### 验证工作流
-
-- 在 **Actions** 标签页检查工作流状态
-- 确保 `Debug Setup` 工作流成功运行
-- 检查部署日志确认机器人已启动
-
-### 1. 环境准备
-
-```bash
-# 确保Python 3.10+
-python --version
-
-# 安装NoneBot2
-pip install nonebot2[fastapi]
-pip install nonebot-adapter-qq
+YOUR_SECRET_NAME:CHAT_API_KEY
+```json
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX...(你的API_KEY,示例)
 ```
 
-### 2. 项目初始化
+然后Add secret.
 
-```bash
-# 创建NoneBot项目
-nb create
-
-# 安装插件
-nb plugin install nonebot-adapter-qq
-```
-
-### 3. 配置环境变量
-
-创建 `.env` 文件并添加以下配置：
-
-```env
-# BigModel API配置
-CHAT__API_KEY=your_api_key_here
-CHAT__API_BASE=https://open.bigmodel.cn/api/paas/v4
-CHAT__MODEL=glm-4.5-air
-
-# 模型参数配置
-CHAT__MAX_TOKENS=1000
-CHAT__TEMPERATURE=1.0
-CHAT__TIMEOUT=30
-```
-
-**配置说明：**
-
-- `CHAT__API_KEY`: BigModel API密钥（必需）
+**.env文件配置说明：**
+- `QQ_BOTS`: 你的QQ官方机器人连接API所需的参数（必需）
+- `CHAT__API_KEY`: API密钥（必需）
 - `CHAT__API_BASE`: API基础地址（可选，默认使用官方地址）
 - `CHAT__MODEL`: 使用的模型名称（可选，默认使用glm-4.5-air）
 - `CHAT__MAX_TOKENS`: 最大令牌数（可选，默认1000）
 - `CHAT__TEMPERATURE`: 回复温度（可选，默认1.0）
 - `CHAT__TIMEOUT`: API超时时间（秒，可选，默认30）
 
-### 4. 启动机器人
-
-```bash
-nb run
-```
-
 ## 🎯 使用方法
 
 ### 基本使用
 
-1. 在QQ群中 @机器人 并发送消息
-2. 机器人会自动调用GLM-4.5-Air API生成回复
+1. 在QQ群中 @机器人 并发送消息，使用/status可以查询机器人运行状态
+2. 机器人会自动调用API生成回复
 3. 支持多轮对话，上下文理解能力强
 
 ### 高级特性
 
 - **@检测**：支持QQ原生@检测和CQ码匹配
 - **错误处理**：API调用失败时提供友好的错误提示
-- **状态提示**：显示"思考中..."状态，提升用户体验
 
 ## 🔧 配置详解
 
