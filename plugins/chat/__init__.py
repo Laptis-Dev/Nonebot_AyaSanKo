@@ -5,7 +5,6 @@ from nonebot.exception import FinishedException
 from nonebot.internal.matcher import Matcher
 import time
 from typing import TypedDict, TypeGuard, TYPE_CHECKING
-from collections.abc import Mapping
 
 # 仅在类型检查时导入具体类型，用于类型收窄
 # fmt: off
@@ -302,49 +301,49 @@ def extract_actual_message(bot: BaseBot, event: Event) -> str:
     return message_text.strip()
 
 
-async def send_thinking_indicator(
-    bot: BaseBot, event: Event
-) -> Mapping[str, object] | None:
-    """发送"正在输入"提示（仅OneBot V11支持）"""
-    bot_type = get_bot_type(bot)
+# async def send_thinking_indicator(
+#     bot: BaseBot, event: Event
+# ) -> Mapping[str, object] | None:
+#     """发送"正在输入"提示（仅OneBot V11支持）"""
+#     bot_type = get_bot_type(bot)
 
-    try:
-        if bot_type == "onebot_v11" and _onebot_v11_available:
-            # 通过 isinstance 收窄类型后，类型检查器能正确推断
-            if TYPE_CHECKING:
-                from nonebot.adapters.onebot.v11 import Bot as OneBotV11BotType
-                from nonebot.adapters.onebot.v11 import (
-                    MessageEvent as OneBotV11MessageEventType,
-                )
-            else:
-                from nonebot.adapters.onebot.v11 import Bot as OneBotV11BotType
-                from nonebot.adapters.onebot.v11 import (
-                    MessageEvent as OneBotV11MessageEventType,
-                )
+#     try:
+#         if bot_type == "onebot_v11" and _onebot_v11_available:
+#             # 通过 isinstance 收窄类型后，类型检查器能正确推断
+#             if TYPE_CHECKING:
+#                 from nonebot.adapters.onebot.v11 import Bot as OneBotV11BotType
+#                 from nonebot.adapters.onebot.v11 import (
+#                     MessageEvent as OneBotV11MessageEventType,
+#                 )
+#             else:
+#                 from nonebot.adapters.onebot.v11 import Bot as OneBotV11BotType
+#                 from nonebot.adapters.onebot.v11 import (
+#                     MessageEvent as OneBotV11MessageEventType,
+#                 )
 
-                if isinstance(bot, OneBotV11BotType) and isinstance(
-                    event, OneBotV11MessageEventType
-                ):
-                    # 此时类型检查器知道 event 是 OneBotV11MessageEventType
-                    if event.group_id:  # 直接访问，类型已收窄
-                        result = await bot.send_group_msg(
-                            group_id=event.group_id, message="..."
-                        )
-                        return {"message_id": result["message_id"]}
-                if hasattr(event, "group_id") and event.group_id:
-                    result = await bot.send_group_msg(
-                        group_id=event.group_id, message="🤔 诺喵莉正在思考中..."
-                    )
-                    return {"message_id": result["message_id"]}
-                elif hasattr(event, "user_id") and event.user_id:
-                    result = await bot.send_private_msg(
-                        user_id=event.user_id, message="🤔 诺喵莉正在思考中..."
-                    )
-                    return {"message_id": result["message_id"]}
-    except Exception as e:
-        logger.debug(f"Failed to send thinking indicator: {e}")
+#                 if isinstance(bot, OneBotV11BotType) and isinstance(
+#                     event, OneBotV11MessageEventType
+#                 ):
+# 此时类型检查器知道 event 是 OneBotV11MessageEventType
+#     if event.group_id:  # 直接访问，类型已收窄
+#         result = await bot.send_group_msg(
+#             group_id=event.group_id, message="..."
+#         )
+#         return {"message_id": result["message_id"]}
+# if hasattr(event, "group_id") and event.group_id:
+#     result = await bot.send_group_msg(
+#         group_id=event.group_id, message="🤔 诺喵莉正在思考中..."
+#     )
+#     return {"message_id": result["message_id"]}
+# elif hasattr(event, "user_id") and event.user_id:
+#     result = await bot.send_private_msg(
+#         user_id=event.user_id, message="🤔 诺喵莉正在思考中..."
+#     )
+#     return {"message_id": result["message_id"]}
+# except Exception as e:
+#     logger.debug(f"Failed to send thinking indicator: {e}")
 
-    return None
+# return None
 
 
 async def delete_message(bot: BaseBot, message_id: str | int) -> bool:
@@ -434,7 +433,7 @@ async def handle_chat(
     thinking_msg = None
     try:
         # 发送思考提示
-        thinking_msg = await send_thinking_indicator(bot, event)
+        # thinking_msg = await send_thinking_indicator(bot, event)
 
         # 使用异步处理器处理消息
         start_time = time.time()
@@ -455,7 +454,9 @@ async def handle_chat(
             if msg_id_obj is not None:
                 # 假设它是 str 或 int，传递给 delete_message
                 # 使用断言帮助类型检查器
-                if isinstance(msg_id_obj, (str, int)):
+                if isinstance(
+                    msg_id_obj, (str, int)
+                ):  # pyright: ignore[reportUnnecessaryIsInstance]
                     _ = await delete_message(bot, msg_id_obj)
                 else:
                     logger.warning(
