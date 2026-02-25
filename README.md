@@ -1,73 +1,33 @@
-# Nonebot_AyaSanKo - AI聊天机器人
+# Nonebot_AyaSanKo
 
-基于 NoneBot2 框架的智能聊天机器人插件，集成 BigModel GLM-4.5-Air API，支持QQ群聊智能对话。
+基于 NoneBot2 框架的QQ机器人项目.
 
-## 🚀 功能特性
+## 正在开发的插件
 
-- **智能对话**：基于GLM-4.5-Air大语言模型，提供高质量的AI回复
-- **@触发**：在QQ群聊中被@时自动触发对话
-- **类型安全**：完整的TypeScript类型定义和运行时验证
-- **配置灵活**：支持环境变量配置，易于部署和扩展
-- **错误处理**：完善的异常处理和日志记录机制
-
-## 📦 安装配置
-
-### 0. Fork仓库后的配置（重要）
-
-如果您Fork了此仓库，为了使自动部署工作流正常运行，需要完成以下步骤：
-
-#### 添加GitHub Secrets
-
-在您Fork的仓库中，进入 **Settings → Secrets and variables → Actions**，添加以下 Secrets：
-
-| Secret名称     | 说明             | 获取方式                                      |
-| -------------- | ---------------- | --------------------------------------------- |
-| `QQ_BOTS`      | QQ机器人配置JSON | 见下方示例                                    |
-| `CHAT_API_KEY` | BigModel API密钥 | [BigModel开放平台](https://open.bigmodel.cn/) |
-
-**QQ_BOTS 配置示例：**
-
-```json
-[
-  {
-    "id": "你的机器人QQ号",
-    "token": "QQ机器人token",
-    "secret": "QQ机器人secret",
-    "intent": {
-      "c2c_group_at_messages": true
-    },
-    "use_websocket": true
-  }
-]
-```
-
-将上述JSON内容保存为Secret `QQ_BOTS`。
-
-#### 验证工作流
-
-- 在 **Actions** 标签页检查工作流状态
-- 确保 `Debug Setup` 工作流成功运行
-- 检查部署日志确认机器人已启动
+- status_plugin 查询机器人状态的插件，可用/status指令查询
+- chat_plugin 集成了人工智能的辅助聊天插件，无需指令响应
+- (尚未计划...)
 
 ### 1. 环境准备
 
 ```bash
-# 确保Python 3.10+
+# 确保Python 3.10+(插件代码所用的PythonAPI几乎都基于3.10)
 python --version
 
+# 安装pipx (pip的替代物)
+python -m pip install --user pipx
+
+# 添加到系统的 PATH 环境变量中
+python -m pipx ensurepath
+
 # 安装NoneBot2
-pip install nonebot2[fastapi]
-pip install nonebot-adapter-qq
+pipx install nb-cli
 ```
 
-### 2. 项目初始化
+### 2. 下载本项目
 
 ```bash
-# 创建NoneBot项目
-nb create
-
-# 安装插件
-nb plugin install nonebot-adapter-qq
+git clone https://github.com/Laptis-Dev/Nonebot_AyaSanKo.git
 ```
 
 ### 3. 配置环境变量
@@ -75,25 +35,59 @@ nb plugin install nonebot-adapter-qq
 创建 `.env` 文件并添加以下配置：
 
 ```env
-# BigModel API配置
-CHAT__API_KEY=your_api_key_here
-CHAT__API_BASE=https://open.bigmodel.cn/api/paas/v4
-CHAT__MODEL=glm-4.5-air
+# Nonebot基础配置(对不起了密集恐惧患者/(ㄒoㄒ)/~~)
+
+DRIVER=~fastapi+~httpx+~websockets
+LOGPILE_LEVEL=INFO # LogPile 日志输出等级，可以为列表
+LOCALSTORE_CACHE_DIR=data/nonebot/cache #重定向localstore插件的缓存路径
+LOCALSTORE_CONFIG_DIR=data/nonebot/config #重定向localstore插件的配置路径
+LOCALSTORE_DATA_DIR=data/nonebot/data #重定向localstore插件的数据路径
+SUPERUSERS=[""] # 超级用户拥有对Bot的最高权限
+NICKNAME=[""] # 机器人的昵称,消息以昵称开头可以代替艾特(似乎QQ官方机器人除外)
+HOST=127.0.0.1 # NoneBot2监听的IP或主机名,如果要对公网开放，请改成 0.0.0.0
+PORT=8080 #NoneBot2监听的端口,请保证该端口号与连接端配置相同或与端口映射配置相关
+LOGPILE_RETENTION=7 # LogPile 日志保留天数
+COMMAND_START=["", "/", "#"] # 命令起始字符
+COMMAND_SEP=[".", " "] # 命令分割字符
+
+# Chat插件配置
+CHAT__API_KEY=your_api_key_here #API密钥（必需）
+CHAT__API_BASE=https://open.bigmodel.cn/api/paas/v4 #示例
+CHAT__MODEL=glm-4.5-air #示例
 
 # 模型参数配置
-CHAT__MAX_TOKENS=1000
-CHAT__TEMPERATURE=1.0
-CHAT__TIMEOUT=30
+CHAT__MAX_TOKENS=1000 #最大令牌数（可选，默认1000）
+CHAT__TEMPERATURE=1.0 #回复温度（可选，默认1.0）
+CHAT__TIMEOUT=30 #API超时时间（秒，可选，默认30）
+
+# OneBot 适配器配置
+
+# ONEBOT_ACCESS_TOKEN=你的访问令牌
+# ONEBOT_SECRET=你的签名
+
+# OneBot V11 正向 Universal WebSocket 配置
+# 参考 https://onebot.adapters.nonebot.dev/docs/guide/setup#%E6%AD%A3%E5%90%91-websocket-%E8%BF%9E%E6%8E%A5
+# 请确保你的 NoneBot 使用的是 ForwardDriver，否则无法使用此连接方式。
+# ONEBOT_WS_URLS=["ws://127.0.0.1:5700"]
+
+# OneBot V11 HTTP POST 配置
+# 参考 https://onebot.adapters.nonebot.dev/docs/guide/setup#http-post
+# 请确保你的 NoneBot 使用的是 ForwardDriver 和 ReverseDriver，否则无法使用此连接方式。
+# ONEBOT_API_ROOTS={"Bot QQ号": "http://127.0.0.1:5700/"}
+
+# OneBot V12 正向 WebSocket 配置
+# 参考 https://onebot.adapters.nonebot.dev/docs/guide/setup#%E6%AD%A3%E5%90%91-websocket-%E8%BF%9E%E6%8E%A5-1
+# 请确保你的 NoneBot 使用的是 ForwardDriver，否则无法使用此连接方式。
+# ONEBOT_V12_WS_URLS=["ws://127.0.0.1:5700"]
+
+# OneBot V12 HTTP Webhook 配置
+# 参考 https://onebot.adapters.nonebot.dev/docs/guide/setup#http-webhook
+# 请确保你的 NoneBot 使用的是 ForwardDriver 和 ReverseDriver，否则无法使用此连接方式。
+# ONEBOT_V12_API_ROOTS={"Bot QQ号": "http://127.0.0.1:5700/"}
 ```
 
-**配置说明：**
-
-- `CHAT__API_KEY`: BigModel API密钥（必需）
-- `CHAT__API_BASE`: API基础地址（可选，默认使用官方地址）
-- `CHAT__MODEL`: 使用的模型名称（可选，默认使用glm-4.5-air）
-- `CHAT__MAX_TOKENS`: 最大令牌数（可选，默认1000）
-- `CHAT__TEMPERATURE`: 回复温度（可选，默认1.0）
-- `CHAT__TIMEOUT`: API超时时间（秒，可选，默认30）
+另外，Nonebot默认启用反向WS，如要使用NapCat、OneBot等协议端，请使用WS Client
+拿NapCat，具体教程请见[基于NapCat+NoneBot2的QQ机器人相关介绍和部署](https://catarium.me/posts/20251031)
 
 ### 4. 启动机器人
 
@@ -101,21 +95,7 @@ CHAT__TIMEOUT=30
 nb run
 ```
 
-## 🎯 使用方法
-
-### 基本使用
-
-1. 在QQ群中 @机器人 并发送消息
-2. 机器人会自动调用GLM-4.5-Air API生成回复
-3. 支持多轮对话，上下文理解能力强
-
-### 高级特性
-
-- **@检测**：支持QQ原生@检测和CQ码匹配
-- **错误处理**：API调用失败时提供友好的错误提示
-- **状态提示**：显示"思考中..."状态，提升用户体验
-
-## 🔧 配置详解
+## 配置详解
 
 ### 环境变量命名规则
 
@@ -135,32 +115,6 @@ nb run
 1. 环境变量值（如果存在）
 2. 默认值（如果环境变量不存在或格式错误）
 
-## 🐛 故障排除
-
-### 常见问题
-
-**1. API密钥错误**
-
-```bash
-# 检查环境变量是否正确设置
-echo $CHAT__API_KEY
-```
-
-**2. 配置加载失败**
-查看日志输出，检查环境变量格式是否正确：
-
-```bash
-# 示例错误信息
-[WARNING] 环变量 abc 无法转换为整数，使用默认值 1000
-[ERROR] 配置加载失败: invalid literal for int() with base 10: 'abc'
-```
-
-**3. 连接超时**
-
-- 检查网络连接
-- 调整 `CHAT__TIMEOUT` 值
-- 确认API地址正确
-
 ### 调试模式
 
 启用详细日志：
@@ -170,7 +124,7 @@ echo $CHAT__API_KEY
 logger.debug("当前配置: %s", config)
 ```
 
-## 📝 开发文档
+## 开发文档
 
 ### 核心组件
 
@@ -196,14 +150,7 @@ class ChatConfig(BaseModel):
 - `safe_int()`: 安全转换整数环境变量
 - `safe_float()`: 安全转换浮点数环境变量
 
-### 代码质量
-
-- ✅ 类型检查：通过pyright严格检查
-- ✅ 错误处理：完善的异常捕获机制
-- ✅ 日志记录：使用nonebot.logger统一日志
-- ✅ 配置验证：运行时配置验证和默认值处理
-
-## 🤝 贡献指南
+## 贡献指南
 
 欢迎提交Issue和Pull Request！
 
@@ -231,12 +178,10 @@ python bot.py
 - 使用TypeScript类型注解
 - 编写详细的文档字符串
 
-## 📄 许可证
+## 许可证
 
-MIT License
+- [MIT License](https://github.com/Laptis-Dev/Nonebot_AyaSanKo?tab=MIT-1-ov-file#)
 
-## 🔗 相关链接
+## 相关链接
 
 - [NoneBot2文档](https://nonebot.dev/)
-- [BigModel API文档](https://open.bigmodel.cn/)
-- [GLM-4.5-Air模型介绍](https://open.bigmodel.cn/modelcenter/api/gl4)
