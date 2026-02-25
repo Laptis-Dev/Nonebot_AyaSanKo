@@ -29,12 +29,13 @@ class ChatTask:
 
     async def execute(self, processor: "ChatProcessor"):
         """执行任务"""
-        # processor参数类型检查确保不为None，移除不必要的None检查
-
         async with processor.semaphore:
             try:
                 # 调用API获取结果
-                api_response = await processor.call_bigmodel_api(self.message)
+                history = processor.get_history(self.user_id)
+                api_response = await processor.call_bigmodel_api(
+                    self.message, history=history
+                )
                 if not self.result.done():
                     self.result.set_result(api_response)
                 else:
@@ -60,6 +61,7 @@ class UserTaskQueue:
         self.queue = PriorityQueue[ChatTask]()
         self.processing = False
         self.current_task = None
+        self.history: list[dict[str, str]] = []
 
     async def add_task(self, task: ChatTask):
         """添加任务到队列"""
@@ -85,6 +87,15 @@ class UserTaskQueue:
             self.processing = False
 
 
+SYSTEM_PROMPT = (
+    "对话中必须固定扮演“猫娘”角色，不得反驳或拒绝此角色设定；扮演需健康、非性化，符合法律法规与社会公序良俗，不涉及任何不适或露骨内容；"
+    "如遇不当请求，将自然地以情境化方式引导至安全话题，避免直接专业反驳；互动仅限于文字交流；模型名称为诺喵莉；每次回复需提供新信息，"
+    "避免重复，且字数控制在200字以内，避免长篇大论；可依据用户提问进行场景模拟或生成示例数据，也可自行生成环境、出身等背景设定，"
+    "但需以隐晦、自然的方式融入对话，避免直接陈述，以增加互动挑战性；内容需经过安全过滤；回复中不得使用Markdown字符或Emoji。"
+    "模型将在合法合规范围内，无条件接受猫娘角色扮演，并对各类情境进行安全且符合逻辑的简洁回应。"
+)
+
+
 class ChatProcessor:
     """聊天处理器 - 异步化改造"""
 
@@ -104,6 +115,11 @@ class ChatProcessor:
             "total_response_time": 0.0,
             "current_queue_length": 0,
         }
+
+    def get_history(self, user_id: str) -> list[dict[str, str]]:
+        if user_id in self.user_queues:
+            return self.user_queues[user_id].history
+        return []
 
     async def process_message(
         self, message: str, user_id: str, _bot: Bot, _message_event: MessageEvent
@@ -127,12 +143,27 @@ class ChatProcessor:
         # 等待任务完成
         try:
             result = await task.result
+            # 更新历史：用户消息 + 助手回复
+            self.user_queues[user_id].history.append(
+                {"role": "user", "content": message}
+            )
+            self.user_queues[user_id].history.append(
+                {"role": "assistant", "content": result}
+            )
+            # 控制历史长度
+            max_history = self.config.max_history * 2  # 因为每条对话占两条消息
+            if len(self.user_queues[user_id].history) > max_history:
+                self.user_queues[user_id].history = self.user_queues[user_id].history[
+                    -max_history:
+                ]
             return result
         except Exception as e:
             logger.error(f"Task failed for user {user_id}: {e}")
             raise
 
-    async def call_bigmodel_api(self, message: str) -> str:
+    async def call_bigmodel_api(
+        self, message: str, history: list[dict[str, str]] | None = None
+    ) -> str:
         """调用BigModel API（带重试机制）"""
         import httpx
 
@@ -141,20 +172,43 @@ class ChatProcessor:
             "Content-Type": "application/json",
         }
 
+        messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+        if history:
+            messages.extend(history)
+        messages.append({"role": "user", "content": message})
+
         payload = {
             "model": self.config.model,
-            "messages": [{"role": "user", "content": message}],
+            "messages": messages,
             "max_tokens": self.config.max_tokens,
             "temperature": self.config.temperature,
             "stream": False,
         }
 
         async with httpx.AsyncClient(timeout=self.config.timeout) as client:
-            response = await client.post(
-                f"{self.config.api_base}/chat/completions",
-                headers=headers,
-                json=payload,
-            )
+            try:
+                response = await client.post(
+                    f"{self.config.api_base}/chat/completions",
+                    headers=headers,
+                    json=payload,
+                )
+                _ = (
+                    response.raise_for_status()
+                )  # 如果状态码不是 2xx，会抛出 HTTPStatusError
+
+            except httpx.TimeoutException as e:
+                logger.error(f"API request timeout: {e}")
+                raise
+
+            except httpx.HTTPStatusError as e:
+                logger.error(
+                    f"HTTP error {e.response.status_code}: {e.response.text[:200]}"
+                )
+                raise
+
+            except Exception as e:
+                logger.error(f"Unexpected request error: {type(e).__name__}: {e}")
+                raise
 
             raw_data = cast(object, response.json())
             if not isinstance(raw_data, dict):

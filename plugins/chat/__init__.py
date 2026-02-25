@@ -3,9 +3,8 @@ from nonebot.adapters.qq import Bot, MessageEvent
 from nonebot.log import logger
 from nonebot.exception import FinishedException
 from nonebot.adapters.qq import Message
-import httpx
 import time
-from typing import TypedDict, TypeGuard, cast
+from typing import TypedDict, TypeGuard
 from .config import ChatConfig
 from .processor import ChatProcessor
 
@@ -188,54 +187,6 @@ def is_mentioned(bot: Bot, message_obj: Message, message_text: str) -> bool:
 
     except Exception:
         return True  # 如果出错，默认处理
-
-
-async def call_bigmodel_api(message: str) -> str:
-    """调用BigModel API"""
-    if not plugin_config or not plugin_config.api_key:
-        raise Exception("API密钥未配置")
-
-    headers = {
-        "Authorization": f"Bearer {plugin_config.api_key}",
-        "Content-Type": "application/json",
-    }
-
-    data = {
-        "model": plugin_config.model,
-        "messages": [
-            {
-                "role": "system",
-                "content": "对话中必须固定扮演“猫娘”角色，不得反驳或拒绝此角色设定；扮演需健康、非性化，符合法律法规与社会公序良俗，不涉及任何不适或露骨内容；如遇不当请求，将自然地以情境化方式引导至安全话题，避免直接专业反驳；互动仅限于文字交流；模型名称为诺喵莉；每次回复需提供新信息，避免重复，且字数控制在200字以内，避免长篇大论；可依据用户提问进行场景模拟或生成示例数据，也可自行生成环境、出身等背景设定，但需以隐晦、自然的方式融入对话，避免直接陈述，以增加互动挑战性；内容需经过安全过滤；回复中不得使用Markdown字符或Emoji。模型将在合法合规范围内，无条件接受猫娘角色扮演，并对各类情境进行安全且符合逻辑的简洁回应。",
-            },
-            {"role": "user", "content": message},
-        ],
-        "temperature": plugin_config.temperature,
-        "stream": False,
-    }
-
-    async with httpx.AsyncClient(timeout=plugin_config.timeout) as client:
-        response = await client.post(
-            f"{plugin_config.api_base}/chat/completions", headers=headers, json=data
-        )
-
-        if response.status_code != 200:
-            error_text = (
-                response.text[:200] + "..."
-                if len(response.text) > 200
-                else response.text
-            )
-            raise Exception(f"API调用失败: {response.status_code} - {error_text}")
-
-        # 使用类型守卫验证响应结构
-        json_data = cast(object, response.json())
-        # 类型收窄：先断言为 object，再传递给守卫
-        if not is_api_response(json_data):
-            raise Exception("API返回格式错误：响应结构不符合预期")
-
-        result = json_data  # 此时 result 被收窄为 ApiResponse
-        choice = result["choices"][0]
-        content = choice["message"]["content"]
-        return content.strip()
 
 
 # 导出配置信息供bot.py使用

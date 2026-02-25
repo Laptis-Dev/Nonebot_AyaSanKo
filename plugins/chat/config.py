@@ -6,9 +6,9 @@ from pydantic import BaseModel, Field
 class ChatConfig(BaseModel):
     """聊天插件配置"""
 
-    api_key: str | None = Field(default=None, description="BigModel API密钥")
+    api_key: str | None = Field(default=None, description="API密钥")
     api_base: str = Field(
-        default="https://open.bigmodel.cn/api/paas/v4", description="BigModel API地址"
+        default="https://open.bigmodel.cn/api/paas/v4", description="API地址"
     )
     model: str = Field(default="glm-4.5-air", description="使用的模型")
     max_tokens: int = Field(default=1000, description="最大令牌数")
