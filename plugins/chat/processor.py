@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 from asyncio import Future, PriorityQueue
 from typing import cast
 from nonebot.log import logger
-from nonebot.adapters.qq import Bot, MessageEvent
+from nonebot.adapters import Bot, Event
 from .config import ChatConfig
 
 
@@ -121,9 +121,11 @@ class ChatProcessor:
             return self.user_queues[user_id].history
         return []
 
+    # fmt: off
     async def process_message(
-        self, message: str, user_id: str, _bot: Bot, _message_event: MessageEvent
+        self, message: str, user_id: str, bot: Bot, event: Event  # pyright: ignore[reportUnusedParameter]
     ) -> str:
+# fmt: on
         """处理消息"""
         # 获取或创建用户队列
         if user_id not in self.user_queues:

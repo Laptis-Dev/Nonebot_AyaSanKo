@@ -1,6 +1,6 @@
 [project]
 name = "Nonebot_AyaSanKo"
-version = "1.0.0"
+version = "1.1.0"
 description = "Nonebot_AyaSanKo"
 readme = "README.md"
 requires-python = ">=3.10, <4.0"
@@ -19,7 +19,19 @@ builtin_plugins = ["echo", "single_session"]
 [tool.nonebot.adapters]
 nonebot-adapter-qq = [{ name = "QQ", module_name = "nonebot.adapters.qq" }]
 "@local" = []
-nonebot-adapter-onebot = [{name = "OneBot V11", module_name = "nonebot.adapters.onebot.v11"}]
+nonebot-adapter-onebot = [
+    { name = "OneBot V11", module_name = "nonebot.adapters.onebot.v11" },
+]
 
 [tool.nonebot.plugins]
 "@local" = []
+
+# ---------- Mypy 配置 ----------
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+
+[[tool.mypy.overrides]]
+module = ["nonebot.adapters.onebot.v11", "nonebot.adapters.onebot.v11.*"]
+ignore_missing_imports = true
