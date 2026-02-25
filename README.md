@@ -1,7 +1,5 @@
 # Nonebot_AyaSanKo
-
-<<<<<<< HEAD
-基于 NoneBot2 框架的QQ机器人项目.
+一个基于 NoneBot2 框架的QQ机器人项目.
 
 ## 正在开发的插件
 
