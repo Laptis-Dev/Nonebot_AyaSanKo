@@ -1,9 +1,6 @@
 # Nonebot_AyaSanKo
 
-一个基于 NoneBot2 框架的QQ机器人项目 \
-_构建此项目的系统因为是Windows，可能对Linux的兼容性稍许影响._
-
----
+一个基于 NoneBot2 框架的QQ机器人项目
 
 ## 正在开发的插件
 
@@ -17,7 +14,7 @@ _构建此项目的系统因为是Windows，可能对Linux的兼容性稍许影�
 ### 1. 环境准备
 
 ```bash
-# 确保Python 3.10+(因为大部分插件代码基于PythonAPI3.10)
+# 确保Python版本 ≥3.10(因为大部分插件代码基于PythonAPI 3.10)
 python --version
 
 # 安装pipx (pip的替代物,速度慢可以去换PyPI源)
@@ -30,10 +27,29 @@ python -m pipx ensurepath
 pipx install nb-cli
 ```
 
-### 2. 下载本项目到你的电脑
+### 2. 下载本项目以及配置虚拟环境
 
 ```bash
+# 克隆项目
 git clone https://github.com/Laptis-Dev/Nonebot_AyaSanKo.git
+
+# 创建虚拟环境
+python -m venv .venv --prompt nonebot2
+
+# 进入虚拟环境
+# Linux
+source .venv/Scripts/activate
+# Windows
+.venv/Scripts/activate
+
+# 安装驱动器
+pip install "nonebot2[fastapi,httpx,websockets]"
+
+# 安装适配器
+pip install nonebot-adapter-onebot nonebot-adapter-qq
+
+# 其他依赖项
+pip install tenacity pydantic
 ```
 
 ### 3. 配置机器人
@@ -153,14 +169,8 @@ _vi编辑器: 编辑完按ESC键，输入`:wq`保存并退出，若出现无法�
 ### 4. 启动机器人
 
 ```bash
-# 先返回到项目根目录
-# Windows
-.venv\Scripts\activate
+# 进入虚拟环境，后执行
 python bot.py
-# Linux(兼容性未知，若报错请及时反馈到Issue!)
-source .venv/Scripts/activate
-python bot.py
-# 请暂时别用nb run直接启动项目，兼容性未知！
 ```
 
 ### 基本使用
@@ -204,9 +214,7 @@ pip install -U pyright pytest mypy
 pyright plugins/*/*.py
 mypy plugins/*/*.py
 
-# 运行测试
-.venv/Scripts/activate #win
-source .venv/Scripts/activate #linux
+# 进入虚拟环境后运行测试
 python bot.py
 ```
 
