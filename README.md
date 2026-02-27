@@ -1,7 +1,5 @@
 # Nonebot_AyaSanKo
 
----
-
 一个基于 NoneBot2 框架的QQ机器人项目 \
 _构建此项目的系统因为是Windows，可能对Linux的兼容性稍许影响._
 
@@ -13,8 +11,6 @@ _构建此项目的系统因为是Windows，可能对Linux的兼容性稍许影�
 - `chat_plugin` 集成了人工智能的辅助聊天插件，无需指令响应
 - `manager_plugin` 全局管理插件指令、过滤关键词、重新获取`.env`的新内容`/reload`、清理上下文`/clear`
 - (还有更多，尚未推出...)
-
----
 
 ## 如何运行AyaSanKo机器人？
 
@@ -166,8 +162,6 @@ source .venv/Scripts/activate
 python bot.py
 # 请暂时别用nb run直接启动项目，兼容性未知！
 ```
-
----
 
 ### 基本使用
 
