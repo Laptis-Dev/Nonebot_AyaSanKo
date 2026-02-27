@@ -142,13 +142,13 @@ ONEBOT_ACCESS_TOKEN=ayasanko
 ```
 
 _vi编辑器: 编辑完按ESC键，输入`:wq`保存并退出，若出现无法保存的情况请输入`:qa!`即可强制退出_ \
-~~_notepad编辑器: 不会保存就去私吧_~~ \
+~~_notepad编辑器: 不会保存就去私吧_~~ 
 
-另外，此项目的设计默认启用反向WebSocket服务端，服务端端口请见`.env`文件中的`PORT`变量值，另外连接到服务端ws需要另外填写`token`，默认是`ayasanko` \
+另外，此项目的设计默认启用反向WebSocket服务端，服务端端口请见`.env`文件中的`PORT`变量值，另外连接到服务端ws需要另外填写`token`，默认是`ayasanko` 
 
-如要使用NapCat、OneBot等协议端，请使用反向WebSocket Client端 \
+如要使用NapCat、OneBot等协议端，请使用反向WebSocket Client端 
 
-拿NapCat，具体教程请见[基于NapCat+NoneBot2的QQ机器人相关介绍和部署](https://catarium.me/posts/20251031) \
+拿NapCat，具体教程请见[基于NapCat+NoneBot2的QQ机器人相关介绍和部署](https://catarium.me/posts/20251031) 
 
 ### 4. 启动机器人
 
