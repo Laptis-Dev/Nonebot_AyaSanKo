@@ -4,9 +4,9 @@
 
 ## 正在开发的插件
 
-- `status_plugin` 查询机器人状态的插件，可用`/status`指令查询
-- `chat_plugin` 集成了人工智能的辅助聊天插件，无需指令响应
-- `manager_plugin` 全局管理插件指令、过滤关键词、重新获取`.env`的新内容`/reload`、清理上下文`/clear`
+- `status_plugin` 查询机器人状态
+- `chat_plugin` AI辅助聊天
+- `manager_plugin` 管理器
 - (还有更多，尚未推出...)
 
 ## 如何运行AyaSanKo机器人？
